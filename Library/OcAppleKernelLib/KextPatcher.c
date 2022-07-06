@@ -155,7 +155,7 @@ PatcherInitContextFromBuffer (
   // and request PRELINK_KERNEL_IDENTIFIER.
   //
 
-  if (!MachoInitializeContext (&Context->MachContext, Buffer, BufferSize, 0, Is32Bit)) {
+  if (!MachoInitializeContext (&Context->MachContext, Buffer, BufferSize, 0, BufferSize, Is32Bit)) {
     DEBUG ((
       DEBUG_INFO,
       "OCAK: %a-bit patcher init from buffer %p %u has unsupported mach-o\n",
@@ -289,7 +289,7 @@ PatcherApplyGenericPatch (
   UINT32      ReplaceCount;
 
   Base = (UINT8 *)MachoGetMachHeader (&Context->MachContext);
-  Size = MachoGetFileSize (&Context->MachContext);
+  Size = MachoGetInnerSize (&Context->MachContext);
   if (Patch->Base != NULL) {
     Status = PatcherGetSymbolAddress (Context, Patch->Base, &Base);
     if (EFI_ERROR (Status)) {
@@ -520,7 +520,7 @@ PatcherBlockKext (
   }
 
   MachBase = (UINT8 *)MachoGetMachHeader (&Context->MachContext);
-  MachSize = MachoGetFileSize (&Context->MachContext);
+  MachSize = MachoGetInnerSize (&Context->MachContext);
 
   //
   // Determine offset of kmod within file.

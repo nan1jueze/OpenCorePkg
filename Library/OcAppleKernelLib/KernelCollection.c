@@ -565,6 +565,7 @@ KcKextIndexFixups (
   CONST MACH_SEGMENT_COMMAND_64  *FirstSegment;
   MACH_HEADER_64                 *MachHeader;
   CONST MACH_RELOCATION_INFO     *Relocations;
+  VOID                           *FileData;
   UINT32                         RelocIndex;
 
   ASSERT (Context != NULL);
@@ -616,8 +617,9 @@ KcKextIndexFixups (
   //
   // Convert all relocations to fixups.
   //
+  FileData = MachoGetFileData (MachContext);
   Relocations = (MACH_RELOCATION_INFO *)(
-                                         (UINTN)MachHeader + DySymtab->LocalRelocationsOffset
+                                         (UINTN)FileData + DySymtab->LocalRelocationsOffset
                                          );
 
   DEBUG ((
@@ -683,8 +685,9 @@ KcGetKextSize (
 
 EFI_STATUS
 KcKextApplyFileDelta (
-  IN OUT OC_MACHO_CONTEXT  *Context,
-  IN     UINT32            Delta
+  IN     PRELINKED_CONTEXT  *PrelinkedContext,
+  IN OUT OC_MACHO_CONTEXT   *Context,
+  IN     UINT32             Delta
   )
 {
   MACH_HEADER_64           *KextHeader;
@@ -695,6 +698,7 @@ KcKextApplyFileDelta (
   MACH_DYSYMTAB_COMMAND    *DySymtab;
   UINT32                   SectIndex;
 
+  ASSERT (PrelinkedContext != NULL);
   ASSERT (Context != NULL);
   ASSERT (Delta > 0);
 
@@ -786,9 +790,11 @@ KcKextApplyFileDelta (
 
   //
   // Update the container offset to make sure we can link against this
-  // kext later as well.
+  // kext later as well. Context->InnerSize remains unchanged and is the actual
+  // size of the kext.
   //
-  Context->ContainerOffset = Delta;
+  Context->FileData = PrelinkedContext->Prelinked;
+  Context->FileSize = PrelinkedContext->PrelinkedSize;
 
   return EFI_SUCCESS;
 }
