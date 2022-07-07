@@ -111,9 +111,8 @@ PrelinkedGetSegmentsFromMacho (
   MACH_SECTION_ANY *InfoSection;
 
   InfoSegment = MachoGetSegmentByName (
-
-  MachoContext,
-  PRELINK_INFO_SEGMENT
+    MachoContext,
+    PRELINK_INFO_SEGMENT
   );
   if (InfoSegment == NULL) {
     return EFI_NOT_FOUND;
